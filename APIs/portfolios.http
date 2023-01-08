@@ -1,0 +1,15 @@
+# @name Login
+POST /v3/auth/login HTTP/1.1
+Host: {{kinvoBaseUrl}}
+Content-Type: application/json
+
+{
+    "email": "gutembergphilipe@gmail.com",
+    "password": "laurinha"
+}
+
+###
+
+GET /portfolios/summary-messages HTTP/1.1
+Host: {{kinvoBaseUrl}}
+Authorization: Bearer {{Login.response.body.data.accessToken}}

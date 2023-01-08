@@ -1,0 +1,19 @@
+@portfolioId = 536142
+
+# @name Login
+POST /v3/auth/login HTTP/1.1
+Host: {{kinvoBaseUrl}}
+Content-Type: application/json
+
+{
+    "email": "gutembergphilipe@gmail.com",
+    "password": "laurinha"
+}
+
+###
+
+# @name GetProducts
+GET /portfolio-query/ProductConsolidation/getProducts/{{portfolioId}}
+Host: {{kinvoBaseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.data.accessToken}}

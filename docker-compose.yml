@@ -1,0 +1,162 @@
+﻿version: "3.4"
+
+services:
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+
+  sql-data:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    volumes:
+      - "./Domain/src/Infrastructure.Data.SqlServer.Migrations/Scripts:/scripts/"
+      - "./Orleans/scripts:/scripts/orleans/"
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /opt/mssql/bin/sqlservr &
+        sleep 30
+        /opt/mssql-tools/bin/sqlcmd -U sa -P Pass@word -l 30 -e -i /scripts/CREATE_DATABASE.sql
+        /opt/mssql-tools/bin/sqlcmd -U sa -P Pass@word -l 30 -e -i /scripts/orleans/CREATE_DATABASE.sql
+        /opt/mssql-tools/bin/sqlcmd -d SQL_XP_XCHANGE_ORLEANS_CUSTODY -U sa -P Pass@word -l 30 -e -i /scripts/orleans/SQLServer-Main.sql
+        /opt/mssql-tools/bin/sqlcmd -d SQL_XP_XCHANGE_ORLEANS_CUSTODY -U sa -P Pass@word -l 30 -e -i /scripts/orleans/SQLServer-Clustering.sql
+        /opt/mssql-tools/bin/sqlcmd -d SQL_XP_XCHANGE_ORLEANS_CUSTODY -U sa -P Pass@word -l 30 -e -i /scripts/orleans/SQLServer-Persistence.sql
+        /opt/mssql-tools/bin/sqlcmd -d SQL_XP_XCHANGE_ORLEANS_CUSTODY -U sa -P Pass@word -l 30 -e -i /scripts/orleans/SQLServer-Reminders.sql
+        sleep infinity
+        
+  sql-data-migration:
+    image: mcr.microsoft.com/dotnet/sdk:5.0
+    depends_on:
+      - sql-data
+    volumes:
+      - "./Domain/src/:/Domain/src/"
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir temp
+        cp -r /Domain/src/Infrastructure.Data.SqlServer.Migrations /temp
+        
+        echo -e 'Install FluentMigrator CLI'
+        export PATH="$PATH:/root/.dotnet/tools"
+        dotnet tool install -g FluentMigrator.DotNet.Cli
+                
+        dotnet build temp/Infrastructure.Data.SqlServer.Migrations/Infrastructure.Data.SqlServer.Migrations.csproj
+        
+        echo -e 'Rollback migration of database SQL_XP_XCHANGE_CUSTODY'
+        dotnet fm rollback -p SqlServer -c "Data Source=sql-data,1433;Initial Catalog=SQL_XP_XCHANGE_CUSTODY;User Id=sa;Password=Pass@word;Encrypt=False;" -a temp/Infrastructure.Data.SqlServer.Migrations/bin/Debug/net5.0/Infrastructure.Data.SqlServer.Migrations.dll all
+        
+        echo -e 'Migrating database SQL_XP_XCHANGE_CUSTODY'
+        dotnet fm migrate -p SqlServer -c "Data Source=sql-data,1433;Initial Catalog=SQL_XP_XCHANGE_CUSTODY;User Id=sa;Password=Pass@word;Encrypt=False;" -a temp/Infrastructure.Data.SqlServer.Migrations/bin/Debug/net5.0/Infrastructure.Data.SqlServer.Migrations.dll --output=Domain/src/Infrastructure.Data.SqlServer.Migrations/Scripts/output.sql
+        
+        echo -e 'Database SQL_XP_XCHANGE_CUSTODY Migrated' 
+        rm -r /temp
+        sleep infinity
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:3.28.0-SNAPSHOT
+    restart: "no"
+    ports:
+      - "9000:9000"
+    environment:
+      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+      KAFKA_BROKERCONNECT: "kafka:29092"
+    depends_on:
+      - kafka
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.1.1
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  # reachable on 9092 from the host and on 29092 from inside docker compose
+  kafka:
+    image: confluentinc/cp-kafka:6.1.1
+    depends_on:
+      - zookeeper
+    ports:
+      - '9092:9092'
+    expose:
+      - '29092'
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
+      KAFKA_MIN_INSYNC_REPLICAS: '1'
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+
+  init-kafka:
+    image: confluentinc/cp-kafka:6.1.1
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:29092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.funding.deposit-identified --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.deposit-settled --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.risk.order-accepted --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.order-accepted --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.order-rejected --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.order-accepted-fallback --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.oms.order-executed --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.order-executed --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.oms.order-cancelled --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.order-cancelled --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.otc.rfq.order-cancelled --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.rfq.order-cancelled --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.funding.withdraw-requested --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.withdraw-held-funds --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.withdraw-insufficient-funds --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.funding.withdraw-reverse-requested --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.withdraw-reversed --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.funding.withdraw-settled --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.withdraw-settled --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.manual-entry-requested --replication-factor 1 --partitions 1
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.otc.rfq.order-accepted --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.rfq.order-accepted --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.rfq.order-rejected --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.rfq.order-accepted-fallback --replication-factor 1 --partitions 1
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.otc.rfq.order-executed --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.rfq.order-executed --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.manual-entry-requested --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.manual-entry-settled --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.funding.deposit-allowed --replication-factor 1 --partitions 1
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.risk.order-amend-accepted --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.order-amend-accepted --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.order-amend-rejected --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.order-amend-accepted-fallback --replication-factor 1 --partitions 1
+
+       
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.oms.order-amend-returned --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.order-amend-returned --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic digitalassets.custody.average-price-updated --replication-factor 1 --partitions 1
+
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:29092 --list
+      "

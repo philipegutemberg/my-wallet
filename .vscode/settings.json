@@ -1,0 +1,9 @@
+{
+    "rest-client.environmentVariables": {
+        "$shared": {
+        },
+        "PRD": {
+            "kinvoBaseUrl": "kinvo2c-api2.kinvo.com.br:443"
+        }
+    }
+}
