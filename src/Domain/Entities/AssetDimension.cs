@@ -1,18 +1,18 @@
 using Domain.Enums;
 
-namespace Domain.Models
+namespace Domain.Entities
 {
     public class AssetDimension
     {
-        public AssetDimension(int assetId, EnumAssetDimension dimension, decimal idealAllocationPercentage)
+        public AssetDimension(int assetId, EnumAssetDimension assetDimensionId, decimal idealAllocationPercentage)
         {
             AssetId = assetId;
-            Dimension = dimension;
+            AssetDimensionId = assetDimensionId;
             IdealAllocationPercentage = idealAllocationPercentage;
         }
 
         public int AssetId { get; }
-        public EnumAssetDimension Dimension { get; }
+        public EnumAssetDimension AssetDimensionId { get; }
         public decimal IdealAllocationPercentage { get; }
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using ProviderManagement.Enums;
 using ProviderManagement.Exceptions;
-using ProviderManagement.Services;
 
 namespace ProviderManagement.Providers.Factory
 {
@@ -14,14 +13,14 @@ namespace ProviderManagement.Providers.Factory
             _kinvoProviderService = kinvoProviderService;
         }
 
-        public IProviderService Get(EnumProvider provider)
+        public IProviderService Get(EnumProvider providerId)
         {
-            switch (provider)
+            switch (providerId)
             {
                 case EnumProvider.Kinvo:
                     return _kinvoProviderService;
                 default:
-                    throw new ProviderManagementException($"Provider not found: {provider}.");
+                    throw new ProviderManagementException($"Provider not found: {providerId}.");
             }
         }
     }

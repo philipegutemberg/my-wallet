@@ -15,7 +15,7 @@ namespace Infra.Database.Postgres.Connection
 
         public IDbConnection Build()
         {
-            return new NpgsqlConnection(_configuration.GetConnectionString("TakeIt"));
+            return new NpgsqlConnection(_configuration.GetConnectionString("InvestingWallet"));
         }
     }
 }

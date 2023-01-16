@@ -1,5 +1,8 @@
 using System;
 using System.Security.AccessControl;
+using Domain.Enums;
+using ProviderManagement.Enums;
+using ProviderManagement.Models;
 
 namespace ExternalServices.Kinvo.Models
 {
@@ -22,6 +25,32 @@ namespace ExternalServices.Kinvo.Models
             public bool IsMovement() => MovementType is not null && EventType is null;
 
             public bool IsEvent() => EventType is not null && MovementType is null;
+
+            public ProviderAssetMovement ToProviderAssetMovement() =>
+                new()
+                {
+                    ProviderId = EnumProvider.Kinvo,
+                    Count = Amount,
+                    Date = Date,
+                    Id = Id.ToString(),
+                    Price = Value,
+                    Type = (EnumMovementType)MovementType!,
+                    TotalAmount = Equity,
+                    AssetPositionId = PortfolioProductId.ToString()
+                };
+
+            public ProviderAssetEvent ToProviderAssetEvent() =>
+                new()
+                {
+                    ProviderId = EnumProvider.Kinvo,
+                    Count = Amount,
+                    Date = Date,
+                    Id = Id.ToString(),
+                    Value = Value,
+                    Type = (EnumEventType)MovementType!,
+                    TotalAmount = Equity,
+                    AssetPositionId = PortfolioProductId.ToString()
+                };
         }
     }
 }

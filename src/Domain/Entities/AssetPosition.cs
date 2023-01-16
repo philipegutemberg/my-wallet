@@ -1,6 +1,6 @@
-namespace Domain.Models
+namespace Domain.Entities
 {
-    public record AssetPosition
+    public class AssetPosition
     {
         public AssetPosition(
             int assetId,
@@ -9,19 +9,19 @@ namespace Domain.Models
             decimal financialPosition,
             decimal appliedValue,
             decimal profitability,
-            decimal walletPercentage)
+            decimal portfolioPercentage)
         {
             Asset = new Asset(assetId, assetName, financialInstitutionId);
             FinancialPosition = financialPosition;
             AppliedValue = appliedValue;
             Profitability = profitability;
-            WalletPercentage = walletPercentage;
+            PortfolioPercentage = portfolioPercentage;
         }
 
         public Asset Asset { get; }
         public decimal FinancialPosition { get; }
         public decimal AppliedValue { get; }
         public decimal Profitability { get; }
-        public decimal WalletPercentage { get; }
+        public decimal PortfolioPercentage { get; }
     }
 }

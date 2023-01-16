@@ -1,10 +1,13 @@
 using System;
+using Domain.Entities;
 using Domain.Enums;
+using ProviderManagement.Enums;
 
 namespace ProviderManagement.Models
 {
-    internal record AssetMovement
+    internal record ProviderAssetMovement
     {
+        public EnumProvider ProviderId { get; init; }
         public string Id { get; init; } = "";
         public string AssetPositionId { get; init; } = "";
         public DateTime Date { get; init; }

@@ -6,10 +6,10 @@ namespace ProviderManagement.Providers
 {
     internal interface IProviderService
     {
-        Task<IEnumerable<AssetPosition>> GetPositions();
+        Task<IEnumerable<ProviderAssetPosition>> GetPositions();
 
-        Task<IEnumerable<AssetMovement>> GetMovements();
+        Task<IEnumerable<ProviderAssetMovement>> GetMovements();
 
-        Task<IEnumerable<AssetEvent>> GetEvents();
+        Task<IEnumerable<ProviderAssetEvent>> GetEvents();
     }
 }

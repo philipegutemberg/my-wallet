@@ -47,11 +47,16 @@ namespace Infra.Database.Postgres.Connection
             return await QueryAsync(sql, null);
         }
 
-        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object parameters)
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object? parameters)
         {
             using IDbConnection connection = _dbConnectionFactory.Build();
             connection.Open();
             return await connection.QueryAsync<T>(sql, param: parameters);
+        }
+
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql)
+        {
+            return await QueryAsync<T>(sql, null);
         }
 
         public async Task<T> QuerySingle<T>(string sql, object? parameters)

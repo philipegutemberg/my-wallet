@@ -7,7 +7,6 @@ using ExternalServices.Kinvo.Api;
 using ExternalServices.Kinvo.Models;
 using ProviderManagement.Models;
 using ProviderManagement.Providers;
-using AssetPosition = ProviderManagement.Models.AssetPosition;
 
 namespace ExternalServices.Kinvo
 {
@@ -22,25 +21,14 @@ namespace ExternalServices.Kinvo
             _kinvoService = kinvoService;
         }
 
-        public async Task<IEnumerable<AssetPosition>> GetPositions()
+        public async Task<IEnumerable<ProviderAssetPosition>> GetPositions()
         {
             GetProductsResponse response = await _kinvoService.GetProducts(PORTFOLIOID);
 
-            return response.GetResponse().Select(p => new AssetPosition
-            {
-                Id = p.PortfolioProductId.ToString(),
-                AssetId = p.ProductId.ToString(),
-                AssetName = p.ProductName,
-                Profitability = p.Profitability,
-                AppliedValue = p.ValueApplied,
-                FinancialPosition = p.Equity,
-                PortfolioPercentage = p.PortfolioPercentage,
-                FinancialInstitutionId = p.FinancialInstitutionId.ToString(),
-                FinancialInstitutionName = p.FinancialInstitutionName
-            });
+            return response.GetResponse().Select(p => p.ToProviderAssetPosition());
         }
 
-        public async Task<IEnumerable<AssetMovement>> GetMovements()
+        public async Task<IEnumerable<ProviderAssetMovement>> GetMovements()
         {
             GetStatementResponse response = await _kinvoService.GetStatement(new GetStatementRequest
             {
@@ -49,19 +37,10 @@ namespace ExternalServices.Kinvo
               PortfolioId = PORTFOLIOID
             });
 
-            return response.GetResponse().Where(p => p.IsMovement()).Select(p => new AssetMovement
-            {
-                Count = p.Amount,
-                Date = p.Date,
-                Id = p.Id.ToString(),
-                Price = p.Value,
-                Type = (EnumMovementType)p.MovementType!,
-                TotalAmount = p.Equity,
-                AssetPositionId = p.PortfolioProductId.ToString()
-            });
+            return response.GetResponse().Where(p => p.IsMovement()).Select(p => p.ToProviderAssetMovement());
         }
 
-        public async Task<IEnumerable<AssetEvent>> GetEvents()
+        public async Task<IEnumerable<ProviderAssetEvent>> GetEvents()
         {
             GetStatementResponse response = await _kinvoService.GetStatement(new GetStatementRequest
             {
@@ -70,16 +49,7 @@ namespace ExternalServices.Kinvo
                 PortfolioId = PORTFOLIOID
             });
 
-            return response.GetResponse().Where(p => p.IsEvent()).Select(p => new AssetEvent
-            {
-                Count = p.Amount,
-                Date = p.Date,
-                Id = p.Id.ToString(),
-                Value = p.Value,
-                Type = (EnumEventType)p.MovementType!,
-                TotalAmount = p.Equity,
-                AssetPositionId = p.PortfolioProductId.ToString()
-            });
+            return response.GetResponse().Where(p => p.IsEvent()).Select(p => p.ToProviderAssetEvent());
         }
     }
 }

@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
 using ProviderManagement.Enums;
 
-namespace ProviderManagement.Providers
+namespace ProviderManagement.Sync.Interfaces
 {
     public interface IProviderSyncService
     {
-        Task Sync(EnumProvider provider);
+        Task Sync(EnumProvider providerId);
     }
 }
