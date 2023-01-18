@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Domain.Entities;
 
 namespace Domain.Repositories
@@ -8,5 +7,7 @@ namespace Domain.Repositories
         Task<AssetPosition> Add(AssetPosition assetPosition);
 
         Task<AssetPosition> Get(int assetId);
+
+        Task RemoveAll();
     }
 }

@@ -1,8 +1,8 @@
-using System.Threading.Tasks;
 using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Repositories;
 using Infra.Database.Postgres.Connection;
+using Infra.Database.Postgres.Consts;
 
 namespace Infra.Database.Postgres
 {
@@ -17,7 +17,7 @@ namespace Infra.Database.Postgres
 
         public async Task<AssetPosition> Add(AssetPosition assetPosition)
         {
-            const string sql = @"INSERT INTO AssetPosition (AssetId, FinancialPosition, AppliedValue, Profitability, PortfolioPercentage)
+            const string sql = $@"INSERT INTO {Tables.AssetPosition} (AssetId, FinancialPosition, AppliedValue, Profitability, PortfolioPercentage)
                                                         VALUES (@AssetId, @FinancialPosition, @AppliedValue, @Profitability, @PortfolioPercentage)
                                                         RETURNING AssetId";
 
@@ -38,9 +38,10 @@ namespace Infra.Database.Postgres
 
         public async Task<AssetPosition> Get(int assetId)
         {
-            const string sql = @"SELECT *
-                                   FROM AssetPosition
-                                  WHERE AssetId = @assetId";
+            const string sql = $@"SELECT A.Id AS AssetId, A.Name As AssetName, A.FinancialInstitutionId, AP.FinancialPosition, AP.AppliedValue, AP.Profitability, AP.PortfolioPercentage
+                                   FROM {Tables.AssetPosition} AP JOIN {Tables.Asset} A
+                                                                    ON AP.AssetId = A.Id
+                                  WHERE A.Id = @assetId";
 
             var assetPositionRow = await _dbConnection.QuerySingle<AssetPosition>(sql, new
             {
@@ -51,6 +52,13 @@ namespace Infra.Database.Postgres
                 throw new RepositoryException($"Error trying to get asset position.");
 
             return assetPositionRow;
+        }
+
+        public async Task RemoveAll()
+        {
+            const string sql = $@"DELETE FROM {Tables.AssetPosition}";
+
+            await _dbConnection.ExecuteAsyncWithTransaction(sql);
         }
     }
 }

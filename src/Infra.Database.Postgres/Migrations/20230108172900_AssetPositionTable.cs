@@ -1,4 +1,5 @@
 using FluentMigrator;
+using Infra.Database.Postgres.Consts;
 
 namespace Infra.Database.Postgres.Migrations
 {
@@ -7,21 +8,21 @@ namespace Infra.Database.Postgres.Migrations
     {
         public override void Up()
         {
-            Create.Table("AssetPosition")
-                .WithColumn("AssetId").AsInt32().PrimaryKey()
-                .WithColumn("FinancialPosition").AsDecimal().NotNullable()
-                .WithColumn("AppliedValue").AsDecimal().NotNullable()
-                .WithColumn("Profitability").AsDecimal().NotNullable()
-                .WithColumn("PortfolioPercentage").AsDecimal().NotNullable();
+            Create.Table(Tables.AssetPosition)
+                .WithColumn("assetid").AsInt32().PrimaryKey()
+                .WithColumn("financialposition").AsDecimal().NotNullable()
+                .WithColumn("appliedvalue").AsDecimal().NotNullable()
+                .WithColumn("profitability").AsDecimal().NotNullable()
+                .WithColumn("portfoliopercentage").AsDecimal().NotNullable();
 
             Create.ForeignKey()
-                .FromTable("AssetPosition").ForeignColumn("AssetId")
-                .ToTable("Asset").PrimaryColumn("Id");
+                .FromTable(Tables.AssetPosition).ForeignColumn("assetid")
+                .ToTable(Tables.Asset).PrimaryColumn("id");
         }
 
         public override void Down()
         {
-            Delete.Table("AssetPosition");
+            Delete.Table(Tables.AssetPosition);
         }
     }
 }

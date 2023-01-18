@@ -1,4 +1,3 @@
-using System;
 using ExternalServices.Kinvo.Api;
 using Microsoft.Extensions.DependencyInjection;
 using ProviderManagement.Providers;

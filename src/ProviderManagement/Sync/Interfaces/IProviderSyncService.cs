@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using ProviderManagement.Enums;
 
 namespace ProviderManagement.Sync.Interfaces

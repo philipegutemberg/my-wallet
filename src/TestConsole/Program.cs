@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Threading;
+﻿using System.Globalization;
 using ExternalServices.Kinvo.Injection;
 using FluentMigrator.Runner;
 using Infra.Database.Postgres.Injection;
@@ -22,8 +20,11 @@ IServiceProvider provider = new ServiceCollection()
     .AddLogging(lb => lb.AddFluentMigratorConsole())
     .BuildServiceProvider();
 
-var migrationRunner = provider.GetRequiredService<IMigrationRunner>();
-migrationRunner.MigrateUp();
+using (var scope = provider.CreateScope())
+{
+    var migrationRunner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+    migrationRunner.MigrateUp();
+}
 
 Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-BR");
 

@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Threading.Tasks;
 using Dapper;
 
 namespace Infra.Database.Postgres.Connection
@@ -15,7 +12,7 @@ namespace Infra.Database.Postgres.Connection
             _dbConnectionFactory = dbConnectionFactory;
         }
 
-        public async Task<int> ExecuteAsyncWithTransaction(string sql, object parameters)
+        public async Task<int> ExecuteAsyncWithTransaction(string sql, object? parameters)
         {
             using IDbConnection connection = _dbConnectionFactory.Build();
             connection.Open();
@@ -33,6 +30,11 @@ namespace Infra.Database.Postgres.Connection
                 dbTransaction.Rollback();
                 throw;
             }
+        }
+
+        public async Task<int> ExecuteAsyncWithTransaction(string sql)
+        {
+            return await ExecuteAsyncWithTransaction(sql, null);
         }
 
         public async Task<IEnumerable<dynamic>> QueryAsync(string sql, object? parameters)

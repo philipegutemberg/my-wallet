@@ -2,7 +2,7 @@
   postgres:
     image: postgres
     volumes:
-      - ./src/Infra.Database.Postgres/Migrations/CreateDatabase.sql:/docker-entrypoint-initdb.d/CreateDatabase.sql
+      - ./Infra.Database.Postgres/Migrations/CreateDatabase.sql:/docker-entrypoint-initdb.d/CreateDatabase.sql
     environment:
       POSTGRES_PASSWORD: "Postgres2022!"
     ports:

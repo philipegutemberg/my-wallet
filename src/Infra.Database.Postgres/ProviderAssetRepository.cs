@@ -1,7 +1,6 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Domain.Exceptions;
 using Infra.Database.Postgres.Connection;
+using Infra.Database.Postgres.Consts;
 using ProviderManagement.Entities;
 using ProviderManagement.Repositories;
 
@@ -16,10 +15,10 @@ namespace Infra.Database.Postgres
             _dbConnection = dbConnection;
         }
 
-        public async Task Add(AssetWithProvider assetWithProvider)
+        public async Task Add(SyncableAssetWithProvider assetWithProvider)
         {
-            const string sql = @"INSERT INTO ProviderAsset (AssetId, ProviderId, ExternalIdOnProvider)
-                                                        VALUES (@AssetId, @ProviderId, @ExternalIdOnProvider)";
+            const string sql = $@"INSERT INTO {Tables.ProviderAsset} (AssetId, ProviderId, ExternalIdOnProvider)
+                                                            VALUES (@AssetId, @ProviderId, @ExternalIdOnProvider)";
 
             var insertedRow = await _dbConnection.ExecuteAsyncWithTransaction(sql, new
             {
@@ -32,13 +31,13 @@ namespace Infra.Database.Postgres
                 throw new RepositoryException($"Error trying to insert provider asset.");
         }
 
-        public async Task<IEnumerable<AssetWithProvider>> GetAll()
+        public async Task<IEnumerable<SyncableAssetWithProvider>> GetAll()
         {
-            const string sql = @"SELECT A.Id, A.Name, A.FinancialInstitutionId, PA.ProviderId, PA.ExternalIdOnProvider
-                                    FROM ProviderAsset PA JOIN Asset A
+            const string sql = $@"SELECT A.Id, A.Name, A.FinancialInstitutionId, PA.ProviderId, PA.ExternalIdOnProvider
+                                    FROM {Tables.ProviderAsset} PA JOIN {Tables.Asset} A
                                                             ON PA.AssetId = A.Id";
 
-            return await _dbConnection.QueryAsync<AssetWithProvider>(sql);
+            return await _dbConnection.QueryAsync<SyncableAssetWithProvider>(sql);
         }
     }
 }

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using ExternalServices.Kinvo.Models;
 using Refit;
 

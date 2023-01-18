@@ -1,58 +1,59 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Domain.Entities;
 using Domain.Repositories;
-using ProviderManagement.Entities;
 using ProviderManagement.Enums;
+using ProviderManagement.Models;
 using ProviderManagement.Providers;
 using ProviderManagement.Providers.Factory;
-using ProviderManagement.Repositories;
+using ProviderManagement.Sync.Context;
+using ProviderManagement.Sync.Entities.Asset;
+using ProviderManagement.Sync.Entities.AssetPosition;
+using ProviderManagement.Sync.Entities.FinancialInstitution;
 using ProviderManagement.Sync.Interfaces;
-using ProviderAssetPosition = ProviderManagement.Models.ProviderAssetPosition;
 
 namespace ProviderManagement.Sync
 {
     internal class ProviderSyncService : IProviderSyncService
     {
+        private readonly ISyncContext _syncContext;
         private readonly IProviderServiceFactory _providerServiceFactory;
-        private readonly IProviderSyncFinancialInstitutionService _providerSyncFinancialInstitutionService;
-        private readonly IProviderSyncAssetService _providerSyncAssetService;
-        private readonly IAssetPositionRepository _assetPositionRepository;
+        private readonly IFinancialInstitutionSyncService _financialInstitutionSyncService;
+        private readonly IAssetSyncService _assetSyncService;
+        private readonly IAssetPositionSyncService _assetPositionSyncService;
 
         public ProviderSyncService(
+            ISyncContext syncContext,
             IProviderServiceFactory providerServiceFactory,
-            IProviderSyncFinancialInstitutionService providerSyncFinancialInstitutionService,
-            IProviderSyncAssetService providerSyncAssetService,
-            IAssetPositionRepository assetPositionRepository
-            )
+            IFinancialInstitutionSyncService financialInstitutionSyncService,
+            IAssetSyncService assetSyncService,
+            IAssetPositionSyncService assetPositionSyncService
+        )
         {
+            _syncContext = syncContext;
             _providerServiceFactory = providerServiceFactory;
-            _providerSyncFinancialInstitutionService = providerSyncFinancialInstitutionService;
-            _providerSyncAssetService = providerSyncAssetService;
-            _assetPositionRepository = assetPositionRepository;
+            _financialInstitutionSyncService = financialInstitutionSyncService;
+            _assetSyncService = assetSyncService;
+            _assetPositionSyncService = assetPositionSyncService;
         }
 
         public async Task Sync(EnumProvider providerId)
         {
-            IProviderService providerService = _providerServiceFactory.Get(providerId);
+            await SetPositionsOnContext(providerId);
 
-            var positions = await providerService.GetPositions();
+            await _financialInstitutionSyncService.Sync();
 
-            var financialInstitutions =
-                await _providerSyncFinancialInstitutionService.SyncFinancialInstitutions(positions);
+            await _assetSyncService.Sync();
 
-            var assets = await _providerSyncAssetService.SyncAssets(positions, financialInstitutions);
-
-            var assetPosition =
-                positions.Select(p => p.ToAssetPosition(assets.First(a => a.ExternalIdOnProvider == p.AssetId)));
-
-            var tasks = assetPosition.Select(_assetPositionRepository.Add);
-
-            await Task.WhenAll(tasks);
+            await _assetPositionSyncService.Sync();
 
             // var movements = await providerService.GetMovements();
             // var events = await providerService.GetEvents();
+        }
+
+        private async Task SetPositionsOnContext(EnumProvider providerId)
+        {
+            IProviderService providerService = _providerServiceFactory.Get(providerId);
+            var positions = await providerService.GetPositions();
+
+            _syncContext.Add(ContextKeys.Positions, positions);
         }
     }
 }

@@ -1,7 +1,6 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Domain.Exceptions;
 using Infra.Database.Postgres.Connection;
+using Infra.Database.Postgres.Consts;
 using ProviderManagement.Entities;
 using ProviderManagement.Repositories;
 
@@ -16,10 +15,10 @@ namespace Infra.Database.Postgres
             _dbConnection = dbConnection;
         }
 
-        public async Task Add(FinancialInstitutionWithProvider financialInstitutionWithProvider)
+        public async Task Add(SyncableFinancialInstitutionWithProvider financialInstitutionWithProvider)
         {
-            const string sql = @"INSERT INTO ProviderFinancialInstitution (FinancialInstitutionId, ProviderId, ExternalIdOnProvider)
-                                                        VALUES (@FinancialInstitutionId, @ProviderId, @ExternalIdOnProvider)";
+            const string sql = $@"INSERT INTO {Tables.ProviderFinancialInstitution} (FinancialInstitutionId, ProviderId, ExternalIdOnProvider)
+                                                                            VALUES (@FinancialInstitutionId, @ProviderId, @ExternalIdOnProvider)";
 
             var insertedRow = await _dbConnection.ExecuteAsyncWithTransaction(sql, new
             {
@@ -32,13 +31,13 @@ namespace Infra.Database.Postgres
                 throw new RepositoryException($"Error trying to insert provider financial institution.");
         }
 
-        public async Task<IEnumerable<FinancialInstitutionWithProvider>> GetAll()
+        public async Task<IEnumerable<SyncableFinancialInstitutionWithProvider>> GetAll()
         {
-            const string sql = @"SELECT FI.Id, FI.Name, PFI.ProviderId, PFI.ExternalIdOnProvider
-                                    FROM ProviderFinancialInstitution PFI JOIN FinancialInstitution FI
+            const string sql = $@"SELECT FI.Id, FI.Name, PFI.ProviderId, PFI.ExternalIdOnProvider
+                                    FROM {Tables.ProviderFinancialInstitution} PFI JOIN {Tables.FinancialInstitution} FI
                                                                             ON PFI.FinancialInstitutionId = FI.Id";
 
-            return await _dbConnection.QueryAsync<FinancialInstitutionWithProvider>(sql);
+            return await _dbConnection.QueryAsync<SyncableFinancialInstitutionWithProvider>(sql);
         }
     }
 }

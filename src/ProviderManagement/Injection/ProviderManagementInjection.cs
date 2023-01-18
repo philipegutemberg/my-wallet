@@ -1,7 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
-using ProviderManagement.Providers;
+using ProviderManagement.Entities;
 using ProviderManagement.Providers.Factory;
 using ProviderManagement.Sync;
+using ProviderManagement.Sync.Context;
+using ProviderManagement.Sync.Entities.Asset;
+using ProviderManagement.Sync.Entities.AssetPosition;
+using ProviderManagement.Sync.Entities.FinancialInstitution;
 using ProviderManagement.Sync.Interfaces;
 
 namespace ProviderManagement.Injection
@@ -11,7 +15,12 @@ namespace ProviderManagement.Injection
         public static IServiceCollection InjectProviderManagementServices(this IServiceCollection services) => services
             .AddTransient<IProviderServiceFactory, ProviderServiceFactory>()
             .AddTransient<IProviderSyncService, ProviderSyncService>()
-            .AddTransient<IProviderSyncFinancialInstitutionService, ProviderSyncFinancialInstitutionService>()
-            .AddTransient<IProviderSyncAssetService, ProviderSyncAssetService>();
+            .AddScoped<ISyncContext, SyncContext>()
+            .AddTransient<ISyncableEntityService<SyncableAssetWithProvider>, AssetService>()
+            .AddTransient<ISyncableEntityService<SyncableFinancialInstitutionWithProvider>, FinancialInstitutionService>()
+            .AddTransient<ISyncableEntityService<SyncableAssetPosition>, AssetPositionService>()
+            .AddTransient<IAssetSyncService, AssetSyncService>()
+            .AddTransient<IAssetPositionSyncService, AssetPositionSyncService>()
+            .AddTransient<IFinancialInstitutionSyncService, FinancialInstitutionSyncService>();
     }
 }

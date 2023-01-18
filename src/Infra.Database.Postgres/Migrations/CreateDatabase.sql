@@ -1,1 +1,1 @@
-CREATE DATABASE investingwallet;
+CREATE DATABASE InvestingWallet;

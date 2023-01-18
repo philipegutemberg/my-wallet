@@ -1,4 +1,3 @@
-using System;
 using Domain.Exceptions;
 
 namespace ProviderManagement.Exceptions

@@ -1,8 +1,8 @@
-using System.Threading.Tasks;
 using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Repositories;
 using Infra.Database.Postgres.Connection;
+using Infra.Database.Postgres.Consts;
 
 namespace Infra.Database.Postgres
 {
@@ -17,7 +17,7 @@ namespace Infra.Database.Postgres
 
         public async Task<FinancialInstitution> Add(FinancialInstitution financialInstitution)
         {
-            const string sql = @"INSERT INTO FinancialInstitution (Name)
+            const string sql = $@"INSERT INTO {Tables.FinancialInstitution} (Name)
                                                         VALUES (@Name)
                                                         RETURNING Id, Name";
 

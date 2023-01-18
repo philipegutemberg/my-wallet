@@ -1,4 +1,5 @@
 using FluentMigrator;
+using Infra.Database.Postgres.Consts;
 
 namespace Infra.Database.Postgres.Migrations
 {
@@ -7,14 +8,14 @@ namespace Infra.Database.Postgres.Migrations
     {
         public override void Up()
         {
-            Create.Table("FinancialInstitution")
-                .WithColumn("Id").AsInt32().PrimaryKey().Identity()
-                .WithColumn("Name").AsString().NotNullable();
+            Create.Table(Tables.FinancialInstitution)
+                .WithColumn("id").AsInt32().PrimaryKey().Identity()
+                .WithColumn("name").AsString().NotNullable();
         }
 
         public override void Down()
         {
-            Delete.Table("FinancialInstitution");
+            Delete.Table(Tables.FinancialInstitution);
         }
     }
 }

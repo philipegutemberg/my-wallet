@@ -17,7 +17,17 @@ namespace ProviderManagement.Models
         public decimal Profitability { get; init; }
         public decimal PortfolioPercentage { get; init; }
 
-        public AssetPosition ToAssetPosition(AssetWithProvider assetWithProvider) =>
+        public AssetPosition ToAssetPosition(SyncableAssetWithProvider assetWithProvider) =>
+            new(
+                assetWithProvider.Id,
+                assetWithProvider.Name,
+                assetWithProvider.FinancialInstitutionId,
+                FinancialPosition,
+                AppliedValue,
+                Profitability,
+                PortfolioPercentage);
+
+        public SyncableAssetPosition ToSyncableAssetPosition(SyncableAssetWithProvider assetWithProvider) =>
             new(
                 assetWithProvider.Id,
                 assetWithProvider.Name,

@@ -1,5 +1,3 @@
-using System;
-
 namespace ExternalServices.Kinvo.Models
 {
     internal abstract record KinvoBaseResponse<TResponse>
