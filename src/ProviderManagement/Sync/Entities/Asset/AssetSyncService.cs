@@ -34,6 +34,7 @@ internal class AssetSyncService : SyncServiceBase<SyncableAssetWithProvider>, IA
             inserted.Id,
             entity.Name,
             entity.FinancialInstitutionId,
+            entity.PortfolioDimensionId,
             (int)entity.ProviderId,
             entity.ExternalIdOnProvider
         ));

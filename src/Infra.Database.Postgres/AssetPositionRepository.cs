@@ -38,7 +38,7 @@ namespace Infra.Database.Postgres
 
         public async Task<AssetPosition> Get(int assetId)
         {
-            const string sql = $@"SELECT A.Id AS AssetId, A.Name As AssetName, A.FinancialInstitutionId, AP.FinancialPosition, AP.AppliedValue, AP.Profitability, AP.PortfolioPercentage
+            const string sql = $@"SELECT A.Id AS AssetId, A.Name As AssetName, A.PortfolioDimensionId, A.FinancialInstitutionId, AP.FinancialPosition, AP.AppliedValue, AP.Profitability, AP.PortfolioPercentage
                                    FROM {Tables.AssetPosition} AP JOIN {Tables.Asset} A
                                                                     ON AP.AssetId = A.Id
                                   WHERE A.Id = @assetId";
@@ -52,6 +52,20 @@ namespace Infra.Database.Postgres
                 throw new RepositoryException($"Error trying to get asset position.");
 
             return assetPositionRow;
+        }
+
+        public async Task<IEnumerable<AssetPosition>> GetAll()
+        {
+            const string sql = $@"SELECT A.Id AS AssetId, A.Name As AssetName, A.PortfolioDimensionId, A.FinancialInstitutionId, AP.FinancialPosition, AP.AppliedValue, AP.Profitability, AP.PortfolioPercentage
+                                   FROM {Tables.AssetPosition} AP JOIN {Tables.Asset} A
+                                                                    ON AP.AssetId = A.Id";
+
+            var assetsPositions = await _dbConnection.QueryAsync<AssetPosition>(sql);
+
+            if (assetsPositions == null)
+                throw new RepositoryException($"Error trying to get assets positions.");
+
+            return assetsPositions;
         }
 
         public async Task RemoveAll()

@@ -9,11 +9,12 @@ public class SyncableAssetPosition : AssetPosition, ISyncableEntity
         int assetId,
         string assetName,
         int financialInstitutionId,
+        int? portfolioDimensionId,
         decimal financialPosition,
         decimal appliedValue,
         decimal profitability,
         decimal portfolioPercentage)
-        : base(assetId, assetName, financialInstitutionId, financialPosition, appliedValue, profitability, portfolioPercentage)
+        : base(assetId, assetName, financialInstitutionId, portfolioDimensionId, financialPosition, appliedValue, profitability, portfolioPercentage)
     {
     }
 
@@ -22,6 +23,7 @@ public class SyncableAssetPosition : AssetPosition, ISyncableEntity
             assetPosition.Asset.Id,
             assetPosition.Asset.Name,
             assetPosition.Asset.FinancialInstitutionId,
+            assetPosition.Asset.PortfolioDimensionId,
             assetPosition.FinancialPosition,
             assetPosition.AppliedValue,
             assetPosition.Profitability,

@@ -7,15 +7,15 @@ namespace ProviderManagement.Entities
 {
     public class SyncableAssetWithProvider : Asset, IModelWithProvider, ISyncableEntity
     {
-        public SyncableAssetWithProvider(int id, string name, int financialInstitutionId, int providerId, string externalIdOnProvider)
-            : base(id, name, financialInstitutionId)
+        public SyncableAssetWithProvider(int id, string name, int financialInstitutionId, int? portfolioDimensionId, int providerId, string externalIdOnProvider)
+            : base(id, name, financialInstitutionId, portfolioDimensionId)
         {
             ProviderId = (EnumProvider)providerId;
             ExternalIdOnProvider = externalIdOnProvider;
         }
 
-        public SyncableAssetWithProvider(string name, int financialInstitutionId, EnumProvider providerId, string externalIdOnProvider)
-            : base(name, financialInstitutionId)
+        public SyncableAssetWithProvider(string name, int financialInstitutionId, int? portfolioDimensionId, EnumProvider providerId, string externalIdOnProvider)
+            : base(name, financialInstitutionId, portfolioDimensionId)
         {
             ProviderId = providerId;
             ExternalIdOnProvider = externalIdOnProvider;

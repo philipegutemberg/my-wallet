@@ -23,6 +23,8 @@ namespace Infra.Database.Postgres.Injection
             .AddTransient<IAssetRepository, AssetRepository>()
             .AddTransient<IAssetPositionRepository, AssetPositionRepository>()
             .AddTransient<IProviderFinancialInstitutionRepository, ProviderFinancialInstitutionRepository>()
-            .AddTransient<IProviderAssetRepository, ProviderAssetRepository>();
+            .AddTransient<IProviderAssetRepository, ProviderAssetRepository>()
+            .AddTransient<IPortfolioDimensionRepository, PortfolioDimensionRepository>()
+            .AddTransient<IPortfolioAllocationRepository, PortfolioAllocationRepository>();
     }
 }

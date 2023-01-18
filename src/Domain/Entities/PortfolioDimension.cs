@@ -1,14 +1,14 @@
 namespace Domain.Entities;
 
-public class AssetDimension
+public class PortfolioDimension
 {
-    public AssetDimension(int id, string name, int? parentId = null)
+    public PortfolioDimension(int id, string name, int? parentId = null)
         : this(name, parentId)
     {
         Id = id;
     }
 
-    public AssetDimension(string name, int? parentId = null)
+    public PortfolioDimension(string name, int? parentId = null)
     {
         Name = name;
         ParentId = parentId;

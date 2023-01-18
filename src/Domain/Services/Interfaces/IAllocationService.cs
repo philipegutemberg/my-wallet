@@ -2,9 +2,9 @@ namespace Domain.Services.Interfaces;
 
 public interface IAllocationService
 {
-    Task AssignAllocation(int assetDimensionId, decimal percentage);
+    Task AssignAllocation(int portfolioDimensionId, decimal percentage);
 
-    Task AssignDimensionParentToDimension(int assetDimensionId, int assetDimensionParentId, decimal percentage);
+    Task AssignDimensionParentToDimension(int portfolioDimensionId, int portfolioDimensionParentId, decimal percentage);
 
     Task AssignDimensionToAsset(int assetId, int dimensionId, decimal percentage);
 }

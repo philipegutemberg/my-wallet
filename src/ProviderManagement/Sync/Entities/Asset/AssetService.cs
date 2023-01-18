@@ -25,6 +25,7 @@ internal class AssetService : ISyncableEntityService<SyncableAssetWithProvider>
                 positions.Select(p => new SyncableAssetWithProvider(
                         p.AssetName,
                         financialInstitutions.First(f => f.ExternalIdOnProvider == p.FinancialInstitutionId).Id,
+                        null,
                         p.ProviderId,
                         p.AssetId))
                     .DistinctBy(r => r.ExternalIdOnProvider)

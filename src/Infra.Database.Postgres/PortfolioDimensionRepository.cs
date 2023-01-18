@@ -7,24 +7,24 @@ using Infra.Database.Postgres.Consts;
 
 namespace Infra.Database.Postgres;
 
-internal class AssetDimensionRepository : IAssetDimensionRepository
+internal class PortfolioDimensionRepository : IPortfolioDimensionRepository
 {
     private readonly DbConnection _dbConnection;
 
-    public AssetDimensionRepository(DbConnection dbConnection)
+    public PortfolioDimensionRepository(DbConnection dbConnection)
     {
         _dbConnection = dbConnection;
     }
 
-    public async Task<AssetDimension> Add(AssetDimension assetDimension)
+    public async Task<PortfolioDimension> Add(PortfolioDimension portfolioDimension)
     {
-        const string sql = $@"INSERT INTO {Tables.Dimension} (Name, ParentId)
+        const string sql = $@"INSERT INTO {Tables.PortfolioDimension} (Name, ParentId)
                                                         VALUES (@Name, @ParentId)
                                                         RETURNING Id, Name, ParentId";
 
-        var insertedRow = await _dbConnection.QuerySingle<AssetDimension?>(sql, new
+        var insertedRow = await _dbConnection.QuerySingle<PortfolioDimension?>(sql, new
         {
-            assetDimension
+            portfolioDimension
         });
 
         if (insertedRow == null)
@@ -33,12 +33,12 @@ internal class AssetDimensionRepository : IAssetDimensionRepository
         return insertedRow;
     }
 
-    public async Task<IEnumerable<AssetDimension>> GetAll()
+    public async Task<IEnumerable<PortfolioDimension>> GetAll()
     {
         const string sql = $@"SELECT Id, Name, ParentId
-                                   FROM {Tables.Dimension}";
+                                   FROM {Tables.PortfolioDimension}";
 
-        var dimensions = await _dbConnection.QueryAsync<AssetDimension>(sql);
+        var dimensions = await _dbConnection.QueryAsync<PortfolioDimension>(sql);
 
         if (dimensions == null)
             throw new RepositoryException($"Error trying to get dimensions.");
@@ -46,13 +46,13 @@ internal class AssetDimensionRepository : IAssetDimensionRepository
         return dimensions;
     }
 
-    public async Task<AssetDimension> Get(int dimensionId)
+    public async Task<PortfolioDimension> Get(int dimensionId)
     {
         const string sql = $@"SELECT Id, Name, ParentId
-                                   FROM {Tables.Dimension}
+                                   FROM {Tables.PortfolioDimension}
                                    WHERE Id = @dimensionId";
 
-        var dimension = await _dbConnection.QuerySingle<AssetDimension?>(sql, new
+        var dimension = await _dbConnection.QuerySingle<PortfolioDimension?>(sql, new
         {
             dimensionId
         });
@@ -63,14 +63,14 @@ internal class AssetDimensionRepository : IAssetDimensionRepository
         return dimension;
     }
 
-    public async Task<AssetDimension> AssignParent(int dimensionId, int parentDimensionId)
+    public async Task<PortfolioDimension> AssignParent(int dimensionId, int parentDimensionId)
     {
-        const string sql = $@"UPDATE {Tables.Dimension}
+        const string sql = $@"UPDATE {Tables.PortfolioDimension}
                                  SET ParentId = @parentDimensionId
                                WHERE Id = @dimensionId
                                RETURNING Id, Name, ParentId";
 
-        var updatedRow = await _dbConnection.QuerySingle<AssetDimension?>(sql, new
+        var updatedRow = await _dbConnection.QuerySingle<PortfolioDimension?>(sql, new
         {
             dimensionId,
             parentDimensionId

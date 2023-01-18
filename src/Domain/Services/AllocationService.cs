@@ -5,19 +5,19 @@ namespace Domain.Services;
 
 internal class AllocationService : IAllocationService
 {
-    private readonly IAssetDimensionRepository _assetDimensionRepository;
+    private readonly IPortfolioDimensionRepository _portfolioDimensionRepository;
 
-    public AllocationService(IAssetDimensionRepository assetDimensionRepository)
+    public AllocationService(IPortfolioDimensionRepository portfolioDimensionRepository)
     {
-        _assetDimensionRepository = assetDimensionRepository;
+        _portfolioDimensionRepository = portfolioDimensionRepository;
     }
 
-    public Task AssignAllocation(int assetDimensionId, decimal percentage)
+    public Task AssignAllocation(int portfolioDimensionId, decimal percentage)
     {
         throw new NotImplementedException();
     }
 
-    public Task AssignDimensionParentToDimension(int assetDimensionId, int assetDimensionParentId, decimal percentage)
+    public Task AssignDimensionParentToDimension(int portfolioDimensionId, int portfolioDimensionParentId, decimal percentage)
     {
         throw new NotImplementedException();
     }

@@ -8,6 +8,8 @@ namespace Domain.Repositories
 
         Task<AssetPosition> Get(int assetId);
 
+        Task<IEnumerable<AssetPosition>> GetAll();
+
         Task RemoveAll();
     }
 }

@@ -6,12 +6,13 @@ namespace Domain.Entities
             int assetId,
             string assetName,
             int financialInstitutionId,
+            int? portfolioDimensionId,
             decimal financialPosition,
             decimal appliedValue,
             decimal profitability,
             decimal portfolioPercentage)
         {
-            Asset = new Asset(assetId, assetName, financialInstitutionId);
+            Asset = new Asset(assetId, assetName, financialInstitutionId, portfolioDimensionId);
             FinancialPosition = financialPosition;
             AppliedValue = appliedValue;
             Profitability = profitability;
