@@ -7,4 +7,5 @@ internal static class Tables
     public const string AssetPosition = "assetposition";
     public const string ProviderFinancialInstitution = "providerfinancialinstitution";
     public const string ProviderAsset = "providerasset";
+    public const string Dimension = "dimension";
 }

@@ -24,6 +24,8 @@ namespace ProviderManagement.Entities
         public EnumProvider ProviderId { get; }
         public string ExternalIdOnProvider { get; }
 
+        public void AssignId(int id) => Id = id;
+
         public string GetSyncId() => ExternalIdOnProvider;
     }
 }

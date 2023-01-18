@@ -14,10 +14,8 @@ namespace Domain.Entities
             FinancialInstitutionId = financialInstitutionId;
         }
 
-        public int Id { get; private set; }
+        public int Id { get; protected set; }
         public string Name { get; }
         public int FinancialInstitutionId { get; }
-
-        public void AssignId(int id) => Id = id;
     }
 }
